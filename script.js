@@ -165,7 +165,7 @@ document.querySelectorAll(".about-projects_component").forEach((component) => {
       crossFade: true,
     },
     autoplay: {
-      delay: 3000,
+      delay: 2500,
       disableOnInteraction: false,
     },
     controller: {
