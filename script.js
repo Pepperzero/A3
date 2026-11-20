@@ -1,3 +1,6 @@
+// A3 System custom script
+// Wrapped so its variables stay private and can't clash with other scripts.
+(function () {
 /////////// NAVBAR HIDES ON SCROLL
 document.addEventListener("DOMContentLoaded", function () {
   const showAnim = gsap
@@ -243,91 +246,6 @@ $(".brands-marquee_component").each(function (index) {
 });
 
 /////// SWIPERONE LOGIC
-// document.addEventListener("DOMContentLoaded", () => {
-//   // Helper to init Swiper only if element exists
-//   const safeSwiper = (el, options) => (el ? new Swiper(el, options) : null);
-
-//   // 1. Find all "Project" components
-//   const components = document.querySelectorAll(".swiperone_component");
-
-//   components.forEach((component, index) => {
-//     // --- A. GALLERY LOGIC (Inside .gallery-container) ---
-//     const galleryWrapper = component.querySelector(".gallery-container");
-//     let thumbsInstance = null;
-
-//     if (galleryWrapper) {
-//       const thumbEl = galleryWrapper.querySelector(".is-thumbs");
-//       const mainEl = galleryWrapper.querySelector(".is-main-image");
-
-//       thumbsInstance = safeSwiper(thumbEl, {
-//         spaceBetween: 16,
-//         slidesPerView: 3,
-//         watchSlidesProgress: true,
-//         breakpoints: {
-//           640: { slidesPerView: 4 },
-//           1280: { slidesPerView: 5 },
-//         },
-//       });
-
-//       if (thumbsInstance) {
-//         safeSwiper(mainEl, {
-//           spaceBetween: 0,
-//           effect: "fade",
-//           speed: 800,
-//           fadeEffect: { crossFade: true },
-//           thumbs: { swiper: thumbsInstance },
-//         });
-//       }
-//     }
-
-//     // --- B. VISUAL MASTER ---
-//     const visualMaster = safeSwiper(
-//       component.querySelector(".is-visual-master"),
-//       {
-//         allowTouchMove: false,
-//         speed: 1000,
-//         effect: "creative",
-//         creativeEffect: {
-//           prev: {
-//             shadow: true,
-//             translate: ["-20%", 0, -1],
-//             opacity: 0,
-//             scale: 0.8,
-//           },
-//           next: { translate: ["100%", 0, 0] },
-//         },
-//       }
-//     );
-
-//     // --- C. TEXT SWIPER ---
-//     const textSwiper = safeSwiper(component.querySelector(".is-text-slide"), {
-//       speed: 1000,
-//       pagination: {
-//         el: component.querySelector(".custom-pagination"),
-//         clickable: true,
-//         renderBullet: (i, c) => `<span class="${c}">${i + 1}</span>`,
-//       },
-//       navigation: {
-//         nextEl: component.querySelector(".next-btn"),
-//         prevEl: component.querySelector(".prev-btn"),
-//       },
-//       on: {
-//         slideChange: function () {
-//           // If you have multiple components, you might want to scope
-//           // background changes to the component wrapper instead of the body
-//           component.setAttribute("data-active-index", this.activeIndex);
-//         },
-//       },
-//     });
-
-//     // --- D. CONTROLLER SYNC ---
-//     if (textSwiper && visualMaster) {
-//       textSwiper.controller.control = visualMaster;
-//       visualMaster.controller.control = textSwiper;
-//     }
-//   });
-// });
-
 document.addEventListener("DOMContentLoaded", () => {
   // Helper to init Swiper only if element exists
   const safeSwiper = (el, options) => (el ? new Swiper(el, options) : null);
@@ -497,43 +415,6 @@ document.querySelectorAll(".project_card").forEach((component) => {
 });
 
 /////// FADE UP EFFECT
-/*
-document.addEventListener("DOMContentLoaded", () => {
-  const observerOptions = {
-    // Use a negative bottom margin to move the "trigger line" up.
-    // This example triggers when the element is 20% above the bottom of the screen.
-    rootMargin: "0px 0px -10% 0px",
-    threshold: 0,
-  };
-
-  const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const target = entry.target;
-
-        // Check if this is a staggered container
-        if (target.getAttribute("fade-up") === "stagger") {
-          const children = target.children;
-          Array.from(children).forEach((child, index) => {
-            // Apply a delay based on the index (0.2s, 0.4s, 0.6s, etc.)
-            child.style.transitionDelay = `${index * 0.15}s`;
-            child.classList.add("is-visible");
-          });
-        } else {
-          // Normal single-element fade
-          target.classList.add("is-visible");
-        }
-
-        observer.unobserve(target);
-      }
-    });
-  }, observerOptions);
-
-  const fadeElems = document.querySelectorAll("[fade-up]");
-  fadeElems.forEach((el) => observer.observe(el));
-});
-*/
-/////// FADE UP EFFECT
 document.addEventListener("DOMContentLoaded", () => {
   const observer = new IntersectionObserver(
     (entries) => {
@@ -606,7 +487,40 @@ function initBasicCustomCursor() {
   });
 }
 
-// Initialize Basic Custom Cursor
+// Initialize Basic Custom Cursor (only on devices with a real mouse)
 document.addEventListener("DOMContentLoaded", () => {
-  initBasicCustomCursor();
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    initBasicCustomCursor();
+  } else {
+    gsap.set(".cursor", { display: "none" });
+  }
 });
+
+/////// PAUSE AUTOPLAY SLIDERS WHEN OFF-SCREEN
+// Runs after all sliders above are initialized. Only touches sliders that
+// have autoplay on; they stop when scrolled out of view and resume on return.
+document.addEventListener("DOMContentLoaded", () => {
+  if (!("IntersectionObserver" in window)) return;
+
+  const autoplaySwipers = Array.from(document.querySelectorAll(".swiper"))
+    .map((el) => el.swiper)
+    .filter((sw) => sw && sw.params.autoplay && sw.params.autoplay.enabled);
+
+  const visibilityObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const sw = entry.target.swiper;
+        if (!sw || sw.destroyed) return;
+        if (entry.isIntersecting) {
+          if (!sw.autoplay.running) sw.autoplay.start();
+        } else if (sw.autoplay.running) {
+          sw.autoplay.stop();
+        }
+      });
+    },
+    { rootMargin: "100px 0px" }
+  );
+
+  autoplaySwipers.forEach((sw) => visibilityObserver.observe(sw.el));
+});
+})();
