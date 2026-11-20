@@ -113,7 +113,7 @@ document
         crossFade: true,
       },
       autoplay: {
-        delay: 2500,
+        delay: 1300,
         disableOnInteraction: false,
       },
       controller: {
@@ -165,7 +165,7 @@ document.querySelectorAll(".about-projects_component").forEach((component) => {
       crossFade: true,
     },
     autoplay: {
-      delay: 2500,
+      delay: 1300,
       disableOnInteraction: false,
     },
     controller: {
