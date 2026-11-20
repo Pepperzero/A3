@@ -496,6 +496,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+/////// ARROWS INSIDE SLIDER BUTTONS
+// Adds a thin chevron to every empty .prev-btn / .next-btn. It uses the
+// button's own text color, so dark and .is-white buttons both match.
+document.addEventListener("DOMContentLoaded", () => {
+  const ARROW_SIZE = 10; // px
+  const ARROW_OPACITY = 0.7;
+  const paths = {
+    prev: "M7.5 2 L3.5 6 L7.5 10",
+    next: "M4.5 2 L8.5 6 L4.5 10",
+  };
+
+  document.querySelectorAll(".prev-btn, .next-btn").forEach((btn) => {
+    if (btn.children.length) return; // leave buttons that already have content
+    const dir = btn.classList.contains("prev-btn") ? "prev" : "next";
+    btn.innerHTML =
+      `<svg viewBox="0 0 12 12" width="${ARROW_SIZE}" height="${ARROW_SIZE}" aria-hidden="true" ` +
+      `style="display:block;position:relative;top:50%;margin:0 auto;transform:translateY(-50%);` +
+      `opacity:${ARROW_OPACITY};pointer-events:none;overflow:visible">` +
+      `<path d="${paths[dir]}" fill="none" stroke="currentColor" stroke-width="1.25" ` +
+      `stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  });
+});
+
 /////// PAUSE AUTOPLAY SLIDERS WHEN OFF-SCREEN
 // Runs after all sliders above are initialized. Only touches sliders that
 // have autoplay on; they stop when scrolled out of view and resume on return.
